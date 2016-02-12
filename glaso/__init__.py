@@ -1,4 +1,4 @@
-from glaso import App, use, middleware
+from glaso import Routes, use, middleware
 from glaso.x import session
 
 app = App()
@@ -23,7 +23,7 @@ def cors(app):
         response.headers['Access-Allow-Origin'] = '*'
 
 middlewares = use(error, cors, session)
-app = middlwares(dispatch(routes))
+app = middlwares(app)
 
 if __name__ == '__main__':
     run(app, port=3000)
