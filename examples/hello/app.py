@@ -1,18 +1,28 @@
-from glaso import App, run
+from glaso import get, post, all, use, dispatch, run, Response, catch
 
-app = App()
+@get('/')
+def home(req):
+    return 'Hello'
+
+@post('/users/')
+def create_user(req):
+    return 201, {'id': 123}
+
+@all()
+def notfound(req):
+    return 404, 'Not really really found'
+
+def throws(req):
+    return 1/0
 
 routes = [
     home,
+    create_user,
+    throws,
     notfound
 ]
 
-@app.get('/')
-def home():
-    return 'Hello'
+middlewares = use(catch)
+app = middlewares(dispatch(routes))
 
-@app.all()
-def notfound():
-    return '404 - Not Found'
-
-run(app, port=3000)
+run(app)
