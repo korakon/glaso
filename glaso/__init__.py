@@ -1,51 +1,24 @@
+import re
 from functools import wraps, reduce
 from werkzeug.serving import run_simple
-from werkzeug.wrappers import Request, Response
+from .route import Route
+from .request import Request
+from .response import Response
 
-# transform routes' return values into a Response object
-# return 202
-# return body
-# return status, body
-# return status, headers, body
-
-def transform(value):
-    if isinstance(value, int):
-        return Response('', status=value)
-    elif isinstance(value, str):
-        return Response(value)
-    elif len(value) == 2:
-        status, body = value
-        return Response(body, status)
-    elif len(value) == 3:
-        status, headers, body = value
-        return Response(body, status, headers)
-    else:
-        raise ValueError('Unknown return type: {}, value: {}'\
-                         .format(type(value), value))
-
-def route(pattern, method):
-    def router(callback):
-        @wraps(callback)
-        def wrapper(req):
-            if not pattern or req.path == pattern:
-                return transform(callback(req))
-            else:
-                return None
+def make(methods=[]):
+    def router(pattern, name=None):
+        def wrapper(callback):
+            return Route(pattern, callback, name, methods)
         return wrapper
     return router
 
-def make(method):
-    def wrapper(pattern=''):
-        return route(pattern, method)
-    return wrapper
-
-get = make('GET')
-post = make('POST')
-delete = make('DELETE')
-put = make('PUT')
-patch = make('PATCH')
-options = make('OPTIONS')
-all = make('*')
+get = make(['GET', 'HEAD'])
+post = make(['POST'])
+delete = make(['DELETE'])
+put = make(['PUT'])
+patch = make(['PATCH'])
+options = make(['OPTIONS'])
+all = make()
 
 def use(*middlewares):
     def run(app):
@@ -77,10 +50,28 @@ def catch(app):
             response = app(req)
             return response
         except Exception as e:
-            print(e)
+            raise e
             return Response("Shit happened", status=500, mimetype='text/plain')
     return middleware
 
+def mount(path, handler):
+    prefix = re.compile(path)
+
+    @wraps(handler)
+    def wrapper(req):
+        to_match = req.prefix[-1] if len(req.prefix) else req.path
+        m = prefix.match(to_match)
+        if m:
+            req.prefix.append(prefix.split(to_match)[-1])
+            req.params.update(m.groupdict())
+            try:
+                res = handler(req)
+                return res
+            finally:
+                req.prefix.pop()
+        else:
+            return None
+    return wrapper
 
 def run(app, host='localhost', port=4000):
     return run_simple(host, port, bridge(app))
