@@ -12,22 +12,6 @@ class Route(object):
         self.callback = callback
         self.methods = methods or []
 
-    def transform(self, value):
-        if isinstance(value, int):
-            return Response('', status=value)
-        elif isinstance(value, str):
-            return Response(value)
-        elif len(value) == 2:
-            status, body = value
-            return Response(body, status)
-        elif len(value) == 3:
-            status, headers, body = value
-            return Response(body, status, headers)
-        else:
-            raise ValueError('Unknown return type: {}, value: {}'\
-                             .format(type(value), value))
-
-
     def __call__(self, req):
         if req.method not in self.methods:
             return None
@@ -36,7 +20,7 @@ class Route(object):
         if not matches:
             return None
         req.params.update(matches.groupdict())
-        return self.transform(self.callback(req))
+        return self.callback(req)
 
     def __str__(self):
         return "<Route {methods:20s} {regex:20s} {callback}>"\
