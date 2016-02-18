@@ -25,7 +25,7 @@ def use(*middlewares):
         return reduce(lambda x, f: f(x), middlewares[::-1], app)
     return run
 
-def dispatch(routes):
+def dispatch(*routes):
     def wrapper(*args, **kw):
         for route in routes:
             res = route(*args, **kw)
@@ -40,6 +40,7 @@ def bridge(app):
     def wrapper(environ, start):
         request = Request(environ)
         response = app(request)
+        response.headers["Server"] = "G L A S O"
         return response(environ, start)
     return wrapper
 
@@ -73,5 +74,5 @@ def mount(path, handler):
             return None
     return wrapper
 
-def run(app, host='localhost', port=4000):
-    return run_simple(host, port, bridge(app))
+def run(app, host='localhost', port=4000, *args, **kwargs):
+    return run_simple(host, port, bridge(app), *args, **kwargs)

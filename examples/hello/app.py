@@ -34,11 +34,12 @@ auth = [signup,
 routes = [
     home,
     create_user,
-    mount('/auth', dispatch(auth)),
+    mount('/auth', dispatch(*auth)),
     notfound
 ]
 
 middlewares = use(catch)
-app = middlewares(dispatch(routes))
+app = middlewares(dispatch(*routes))
 
-run(app)
+if __name__ == '__main__':
+    run(app)
