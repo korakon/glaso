@@ -3,7 +3,10 @@ from functools import wraps, reduce
 from werkzeug.serving import run_simple
 from .route import Route
 from .request import Request
-from .response import Response
+from .response import Response, html
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 def make(methods=[]):
     def router(pattern, name=None):
@@ -38,6 +41,9 @@ def bridge(app):
     def wrapper(environ, start):
         request = Request(environ)
         response = app(request)
+        if not response:
+            logger.warn("Your app didn't return a response for this path: {}".format(request.path))
+            response = html('Not Found', status=404)
         response.headers["Server"] = "G L A S O"
         return response(environ, start)
     return wrapper
@@ -49,8 +55,8 @@ def catch(app):
             response = app(req)
             return response
         except Exception as e:
-            raise e
-            return Response("Shit happened", status=500, mimetype='text/plain')
+            logger.exception(e)
+            return Response("Internal Server Diarrhea.", status=500, mimetype='text/plain')
     return middleware
 
 def mount(path, handler):
