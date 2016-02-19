@@ -1,31 +1,31 @@
 from glaso import get, post, delete, mount, all, use, dispatch, run, Response, catch
+from glaso.response import html, json
 
 @get('^/$')
 def home(x):
-    return 'Hello'
+    return html('Hello')
 
 @post('^/users/?$')
 def create_user(req):
-    return 201, {'id': 123}
+    return json({'id': 123}, status=201)
 
-@all('')
 def notfound(x):
-    return 404, 'Not really really found'
+    return html('Not really really found', status=404)
 
 def throws(req):
     return 1/0
 
-@get('/signup')
+@get('^/$')
 def signup(req):
-    return 'Signed Up'
+    return html('Signup')
 
-@post('/login')
+@post('/login/?$')
 def login(req):
-    return 200, {'success': True}
+    return json({'success': True})
 
-@delete('/session')
+@delete('/session/?$')
 def logout(req):
-    return 200, {'success': True}
+    return json({'success': False})
 
 auth = [signup,
         login,
@@ -42,4 +42,4 @@ middlewares = use(catch)
 app = middlewares(dispatch(*routes))
 
 if __name__ == '__main__':
-    run(app)
+    run(app, use_reloader=True)
