@@ -35,6 +35,7 @@ routes = [
     home,
     create_user,
     mount('/auth', dispatch(*auth)),
+    throws,
     notfound
 ]
 
@@ -42,4 +43,4 @@ middlewares = use(catch)
 app = middlewares(dispatch(*routes))
 
 if __name__ == '__main__':
-    run(app, use_reloader=True)
+    run(app, use_reloader=True, use_debugger=True)
