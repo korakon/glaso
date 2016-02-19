@@ -13,7 +13,8 @@ class Route(object):
         self.methods = methods or []
 
     def __call__(self, req):
-        if req.method not in self.methods:
+        # Empty self.methods means match all methods
+        if self.methods and req.method not in self.methods:
             return None
         prefix = "".join(req.prefix) if req.prefix else req.path
         matches = self.regex.match(prefix)

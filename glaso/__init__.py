@@ -31,8 +31,6 @@ def dispatch(*routes):
             res = route(*args, **kw)
             if isinstance(res, Response):
                 return res
-        else:
-            return Response("Not Found", status=404, mimetype='text/plain')
     return wrapper
 
 def bridge(app):
