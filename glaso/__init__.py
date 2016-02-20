@@ -61,7 +61,6 @@ def catch(app):
 
 def mount(path, handler):
     prefix = re.compile(path)
-
     @wraps(handler)
     def wrapper(req):
         to_match = req.prefix[-1] if len(req.prefix) else req.path
