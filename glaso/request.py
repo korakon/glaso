@@ -5,8 +5,13 @@ class Request(Base):
         super(Request, self).__init__(environ)
         # Params captured from request url
         self.params = {}
-        # User editable dictionary to pass values between routes.
-        self.vault = {}
         # Used to mount apps
         # eg: mount('/api/users', users.app)
         self.prefix = []
+        # User editable dictionary to pass values between routes.
+        self.vault = {
+            'params': self.params,
+            'prefix': self.prefix,
+            'files': self.files,
+            'cookies': self.cookies
+        }
