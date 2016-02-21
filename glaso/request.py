@@ -1,4 +1,6 @@
 from werkzeug.wrappers import Request as Base
+from functools import lru_cache
+from json import loads
 
 class Request(Base):
     def __init__(self, environ):
@@ -17,3 +19,14 @@ class Request(Base):
             'files': self.files,
             'cookies': self.cookies
         }
+
+    @property
+    @lru_cache(10)
+    def body(self):
+        if self.mimetype == 'application/json':
+            try:
+                return loads(self.get_data(as_text=True))
+            except ValueError:
+                raise ValueError('Request body is not valid json')
+        else:
+            raise ValueError('Request body couldnt be decoded')
