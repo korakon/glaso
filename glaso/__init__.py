@@ -5,13 +5,24 @@ from .route import Route
 from .request import Request
 from .response import Response, html
 from logging import getLogger
+from inspect import signature
 
 logger = getLogger(__name__)
+
+def spreaded(callback):
+    @wraps(callback)
+    def wrapper(req):
+        spec = signature(callback).parameters
+        vault = req.vault
+        args = {k: vault.get(k) or getattr(req, k) for k in spec}
+        return callback(**args)
+    return wrapper
+
 
 def make(methods=[]):
     def router(pattern, name=None):
         def wrapper(callback):
-            return Route(pattern, callback, name, methods)
+            return Route(pattern, spreaded(callback), name, methods)
         return wrapper
     return router
 
