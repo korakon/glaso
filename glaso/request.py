@@ -10,6 +10,8 @@ class Request(Base):
         self.prefix = []
         # User editable dictionary to pass values between routes.
         self.vault = {
+            'request': self,
+            'data': self.data,
             'params': self.params,
             'prefix': self.prefix,
             'files': self.files,
