@@ -40,12 +40,12 @@ def use(*middlewares):
     return run
 
 def dispatch(*routes):
-    def wrapper(*args, **kw):
+    def dispatcher(*args, **kw):
         for route in routes:
             res = route(*args, **kw)
             if isinstance(res, Response):
                 return res
-    return wrapper
+    return dispatcher
 
 def bridge(app):
     @wraps(app)
@@ -70,9 +70,9 @@ def catch(app):
             return Response("Internal Server Diarrhea.", status=500, mimetype='text/plain')
     return middleware
 
-def mount(path, handler):
+def mount(path, callback):
     prefix = re.compile(path)
-    @wraps(handler)
+    @wraps(callback)
     def wrapper(req):
         to_match = req.prefix[-1] if len(req.prefix) else req.path
         m = prefix.match(to_match)
@@ -80,7 +80,7 @@ def mount(path, handler):
             req.prefix.append(prefix.split(to_match)[-1])
             req.params.update(m.groupdict())
             try:
-                res = handler(req)
+                res = callback(req)
                 return res
             finally:
                 req.prefix.pop()
